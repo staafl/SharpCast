@@ -22,7 +22,7 @@
 
         static void Main(string[] args)
         {
-            string host = args.FirstOrDefault() ?? "192.168.0.105";
+            string host = args.FirstOrDefault(x => !x.StartsWith("/")) ?? "192.168.0.105";
             string ip = GetMainIPv4().ToString();
             int port = 7532;
             string contentUrl = $"http://{ip}:{port}/zelda.jpg";
@@ -91,7 +91,7 @@
                     {
                         break;
                     }
-                    Thread.Sleep(5000);
+                    Thread.Sleep(5*60*1000-5000);
                 }
             }
             catch (Exception e)
