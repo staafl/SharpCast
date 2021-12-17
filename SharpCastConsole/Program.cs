@@ -38,6 +38,7 @@
             bool single = args.Any(x => x == "/single");
             bool debug = args.Any(x => x == "/debug");
 
+            byte[] bmpArray = GetScreenshot();
             if (true)
             {
                 new Thread(() =>
@@ -45,7 +46,6 @@
                     HttpListener listener = new HttpListener();
                     listener.Prefixes.Add($"http://{ip}:{port}/");
                     listener.Start();
-                    byte[] bmpArray = null;
                     while (true)
                     {
                         try
@@ -59,23 +59,12 @@
                             HttpListenerResponse response = context.Response;
                             if (!single || bmpArray == null)
                             {
-                                using (var bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height))
-                                {
-                                    using (Graphics gr = Graphics.FromImage(bmp))
-                                    {
-                                        gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
-                                        using (var ms = new MemoryStream())
-                                        {
-                                            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                            bmpArray = ms.ToArray();
-                                        }
-                                    }
-                                }
+                                bmpArray = GetScreenshot();
                             }
 
                             response.ContentLength64 = bmpArray.Length;
                             response.ContentType = "image/jpeg";
-                            System.IO.Stream output = response.OutputStream;
+                            Stream output = response.OutputStream;
                             output.Write(bmpArray, 0, (int)bmpArray.Length);
                             output.Close();
 
@@ -133,6 +122,25 @@
 
                 Thread.Sleep(interval * 1000);
             }
+        }
+
+        private static byte[] GetScreenshot()
+        {
+            byte[] bmpArray;
+            using (var bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height))
+            {
+                using (Graphics gr = Graphics.FromImage(bmp))
+                {
+                    gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
+                    using (var ms = new MemoryStream())
+                    {
+                        bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        bmpArray = ms.ToArray();
+                    }
+                }
+            }
+
+            return bmpArray;
         }
     }
 }
