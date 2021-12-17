@@ -29,6 +29,7 @@
             const string contentType = "image/jpeg";
 
             bool persistent = args.Any(x => x == "/persistent");
+            bool debug = args.Any(x => x == "/debug");
 
             new Thread(() =>
             {
@@ -37,45 +38,57 @@
                 listener.Start();
                 while (true)
                 {
-                    HttpListenerContext context = listener.GetContext();
-                    HttpListenerRequest request = context.Request;
-                    HttpListenerResponse response = context.Response;
-                    Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-                    Graphics gr = Graphics.FromImage(bmp);
-                    gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
-                    using (var ms = new MemoryStream())
+                    try
                     {
-                        bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-                        response.ContentLength64 = ms.Length;
-                        response.ContentType = "image/jpeg";
-                        System.IO.Stream output = response.OutputStream;
-                        output.Write(ms.ToArray(), 0, (int)ms.Length);
-                        output.Close();
+                        HttpListenerContext context = listener.GetContext();
+                        HttpListenerRequest request = context.Request;
+                        if (debug)
+                        {
+                            Console.WriteLine("Got request");
+                        }
+                        HttpListenerResponse response = context.Response;
+                        Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+                        Graphics gr = Graphics.FromImage(bmp);
+                        gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
+                        using (var ms = new MemoryStream())
+                        {
+                            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                            response.ContentLength64 = ms.Length;
+                            response.ContentType = "image/jpeg";
+                            System.IO.Stream output = response.OutputStream;
+                            output.Write(ms.ToArray(), 0, (int)ms.Length);
+                            output.Close();
+                        }
+                        if (!persistent)
+                        {
+                            break;
+                        }
                     }
-                    if (!persistent)
+                    catch (Exception ex)
                     {
-                        break;
+                        Console.WriteLine("Listener exception");
+                        Console.WriteLine(ex + "");
                     }
                 }
                 listener.Stop();
                 Environment.Exit(0);
             }).Start();
 
-            try
+            Player client = new Player(host);
+            client.Connect();
+
+            if (debug)
             {
-                Player client = new Player(host);
-                client.Connect();
-
-                if (args.Any(x => x == "/debug"))
+                client.MediaStatusChanged += (sender, status) =>
                 {
-                    client.MediaStatusChanged += (sender, status) =>
-                    {
-                        Console.WriteLine("New player state: " + status.PlayerState);
-                    };
-                }
+                    Console.WriteLine("New player state: " + status.PlayerState);
+                };
+            }
 
-                var rand = new Random();
-                while (true)
+            var rand = new Random();
+            while (true)
+            {
+                try
                 {
                     client.LoadPhoto(
                         new Uri(contentUrl + "/" + rand.Next()),
@@ -91,12 +104,13 @@
                     {
                         break;
                     }
-                    Thread.Sleep(5*60*1000-5000);
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e + "");
+                catch (Exception e)
+                {
+                    Console.WriteLine("Chromecast exception");
+                    Console.WriteLine(e + "");
+                }
+                Thread.Sleep(5*60*1000-5000);
             }
         }
     }
