@@ -36,7 +36,7 @@
             EnsureChannelIsConnected();
             StatusResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new LaunchRequest(appId), Channel.DEFAULT_RECEIVER_ID) as StatusResponse;
             if (response != null && response.Status != null) {
-                return response.Status.Applications[0];
+                return response.Status.Applications == null ? null : response.Status.Applications[0];
             }
 
             return null;
