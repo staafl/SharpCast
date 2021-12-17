@@ -85,6 +85,7 @@
 
             Player client = new Player(host);
             client.Connect();
+            client.LaunchApp("233637DE"); // CC1AD845 ?
             if (debug)
             {
                 client.MediaStatusChanged += (sender, status) =>
