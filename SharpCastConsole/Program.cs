@@ -20,11 +20,17 @@
         .FirstOrDefault()?.UnicastAddresses?
         .Where((ua) => IsIPv4(ua.Address))?.FirstOrDefault()?.Address;
 
+        static string GetArg(string[] args, string name)
+        {
+            return args.FirstOrDefault(x => x.StartsWith("/" + name + "="))?.Split(new[] { '=' }, 2).Skip(1).FirstOrDefault();
+        }
+
         static void Main(string[] args)
         {
             string host = args.FirstOrDefault(x => !x.StartsWith("/")) ?? "192.168.0.105";
-            string ip = GetMainIPv4().ToString();
-            int port = 7532;
+            string ip = GetArg(args, "ip") ?? GetMainIPv4().ToString();
+            int interval = int.Parse(GetArg(args, "interval") ?? "295");
+            int port = int.Parse(GetArg(args, "port") ?? "7532");
             string contentUrl = $"http://{ip}:{port}/zelda.jpg";
             const string contentType = "image/jpeg";
 
@@ -110,7 +116,7 @@
                     Console.WriteLine("Chromecast exception");
                     Console.WriteLine(e + "");
                 }
-                Thread.Sleep(5*60*1000-5000);
+                Thread.Sleep(interval * 1000);
             }
         }
     }
