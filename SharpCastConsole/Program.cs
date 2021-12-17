@@ -35,6 +35,7 @@
             const string contentType = "image/jpeg";
 
             bool persistent = args.Any(x => x == "/persistent");
+            bool single = args.Any(x => x == "/single");
             bool debug = args.Any(x => x == "/debug");
 
             if (true)
@@ -44,6 +45,7 @@
                     HttpListener listener = new HttpListener();
                     listener.Prefixes.Add($"http://{ip}:{port}/");
                     listener.Start();
+                    byte[] bmpArray = null;
                     while (true)
                     {
                         try
@@ -55,18 +57,28 @@
                                 Console.WriteLine("Got request");
                             }
                             HttpListenerResponse response = context.Response;
-                            Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
-                            Graphics gr = Graphics.FromImage(bmp);
-                            gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
-                            using (var ms = new MemoryStream())
+                            if (!single || bmpArray == null)
                             {
-                                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                response.ContentLength64 = ms.Length;
-                                response.ContentType = "image/jpeg";
-                                System.IO.Stream output = response.OutputStream;
-                                output.Write(ms.ToArray(), 0, (int)ms.Length);
-                                output.Close();
+                                using (var bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height))
+                                {
+                                    using (Graphics gr = Graphics.FromImage(bmp))
+                                    {
+                                        gr.CopyFromScreen(0, 0, 0, 0, bmp.Size);
+                                        using (var ms = new MemoryStream())
+                                        {
+                                            bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                            bmpArray = ms.ToArray();
+                                        }
+                                    }
+                                }
                             }
+
+                            response.ContentLength64 = bmpArray.Length;
+                            response.ContentType = "image/jpeg";
+                            System.IO.Stream output = response.OutputStream;
+                            output.Write(bmpArray, 0, (int)bmpArray.Length);
+                            output.Close();
+
                             if (!persistent)
                             {
                                 break;
