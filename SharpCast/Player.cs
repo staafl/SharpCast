@@ -108,26 +108,26 @@
         public void Play() {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
-            MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
-            if (mediaStatus == null) {
-                throw new InvalidOperationException("No media running");
-            }
+            //MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
+            //if (mediaStatus == null) {
+            //    throw new InvalidOperationException("No media running");
+            //}
 
             StartSession(runningApplication.TransportId);
-            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PlayRequest(runningApplication.SessionId, mediaStatus.MediaSessionId), runningApplication.TransportId);
+            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PlayRequest(runningApplication.SessionId, 0), runningApplication.TransportId);
             HandleResponse(response);
         }
 
         public void Pause() {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
-            MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
-            if (mediaStatus == null) {
-                throw new InvalidOperationException("No media running");
-            }
+            //MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
+            //if (mediaStatus == null) {
+                //throw new InvalidOperationException("No media running");
+            //}
 
             StartSession(runningApplication.TransportId);
-            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PauseRequest(runningApplication.SessionId, mediaStatus.MediaSessionId), runningApplication.TransportId);
+            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PauseRequest(runningApplication.SessionId, 0), runningApplication.TransportId);
             HandleResponse(response);
         }
 

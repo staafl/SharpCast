@@ -34,6 +34,7 @@
                 Player client1 = new Player(host);
                 client1.Connect();
                 client1.Pause();
+                Environment.Exit(0);
                 return;
             }
             if (args.Any(x => x == "/play"))
@@ -41,6 +42,7 @@
                 Player client1 = new Player(host);
                 client1.Connect();
                 client1.Play();
+                Environment.Exit(0);
                 return;
             }
 
