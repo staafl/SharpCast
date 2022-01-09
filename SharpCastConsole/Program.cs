@@ -28,9 +28,25 @@
         static void Main(string[] args)
         {
             string host = args.FirstOrDefault(x => !x.StartsWith("/")) ?? "192.168.0.105";
+
+            if (args.Any(x => x == "/pause"))
+            {
+                Player client1 = new Player(host);
+                client1.Connect();
+                client1.Pause();
+                return;
+            }
+            if (args.Any(x => x == "/play"))
+            {
+                Player client1 = new Player(host);
+                client1.Connect();
+                client1.Play();
+                return;
+            }
+
             string ip = GetArg(args, "ip") ?? GetMainIPv4().ToString();
-            int interval = int.Parse(GetArg(args, "interval") ?? "295");
             int port = int.Parse(GetArg(args, "port") ?? "7532");
+            int interval = int.Parse(GetArg(args, "interval") ?? "295");
             string contentUrl = $"http://{ip}:{port}/zelda.jpg";
             const string contentType = "image/jpeg";
 
