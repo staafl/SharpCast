@@ -48,6 +48,16 @@
 
             string ip = GetArg(args, "ip") ?? GetMainIPv4().ToString();
             int port = int.Parse(GetArg(args, "port") ?? "7532");
+            int timeout = int.Parse(GetArg(args, "timeout") ?? "0");
+            if (timeout > 0)
+            {
+                new Thread(() =>
+                {
+                    Thread.Sleep(timeout * 60 * 1000);
+                    Environment.Exit(0);
+                })
+                { IsBackground = true }.Start();
+            }
             int interval = int.Parse(GetArg(args, "interval") ?? "295");
             string contentUrl = $"http://{ip}:{port}/zelda.jpg";
             const string contentType = "image/jpeg";
@@ -99,7 +109,8 @@
                     }
                     listener.Stop();
                     Environment.Exit(0);
-                }).Start();
+                })
+                { IsBackground = true }.Start();
             }
 
             Player client = new Player(host);
