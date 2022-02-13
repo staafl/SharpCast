@@ -147,9 +147,27 @@
                 {
                     Console.WriteLine("Chromecast exception");
                     Console.WriteLine(e + "");
+                    if (e.Message == "No running application")
+                    {
+                        Console.Beep();
+                        Console.Beep();
+                        Environment.Exit(0);
+                        return;
+                    }
                 }
-
-                Thread.Sleep(interval * 1000);
+                for (int x = interval; x > 0; )
+                {
+                    Thread.Sleep(Math.Min(10, x) * 1000);
+                    x -= Math.Min(10, x);
+                    if (client.GetRunningApp()?.ApplicationId != "CC1AD845")
+                    {
+                        Console.Beep();
+                        Console.Beep();
+                        Environment.Exit(0);
+                        return;
+                    }
+                    Console.WriteLine(client.GetRunningApp()?.ApplicationId);
+                }
             }
         }
 
