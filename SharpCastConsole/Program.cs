@@ -124,6 +124,8 @@
                 };
             }
 
+            bool first = true;
+
             var rand = new Random();
             while (true)
             {
@@ -161,13 +163,25 @@
                     x -= Math.Min(10, x);
                     if (client.GetRunningApp()?.ApplicationId != "CC1AD845")
                     {
-                        Console.Beep();
-                        Console.Beep();
-                        Environment.Exit(0);
-                        return;
+                        if (first)
+                        {
+                            x += 10;
+                        }
+                        else
+                        {
+                            Console.Beep();
+                            Console.Beep();
+                            Environment.Exit(0);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        first = false;
                     }
                     Console.WriteLine(client.GetRunningApp()?.ApplicationId);
                 }
+                first = false;
             }
         }
 
