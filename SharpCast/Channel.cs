@@ -132,14 +132,14 @@
         }
 
 
-        public Response SendRequest(string ns, Request request, string destinationId) {
+        public Response SendRequest(string ns, Request request, string destinationId, int? timeout) {
             int requestId = Interlocked.Increment(ref _requestId);
             request.RequestId = requestId;
             SendMessage(ns, request, destinationId);
             ResponseHolder responseHolder = new ResponseHolder();
             _responses[requestId] = responseHolder;
             // Wait for response
-            bool signaled = responseHolder.Signal.WaitOne(REQUEST_TIMEOUT);
+            bool signaled = responseHolder.Signal.WaitOne(timeout ?? REQUEST_TIMEOUT);
             if (!signaled) {
                 throw new TimeoutException(string.Format("Could not get response for the request {0}", request.GetType().Name));
             }

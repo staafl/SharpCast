@@ -32,9 +32,9 @@
 
         public event EventHandler<Status> StatusChanged;
 
-        public Application LaunchApp(string appId) {
+        public Application LaunchApp(string appId, int? timeout = null) {
             EnsureChannelIsConnected();
-            StatusResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new LaunchRequest(appId), Channel.DEFAULT_RECEIVER_ID) as StatusResponse;
+            StatusResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new LaunchRequest(appId), Channel.DEFAULT_RECEIVER_ID, timeout) as StatusResponse;
             if (response != null && response.Status != null) {
                 return response.Status.Applications == null ? null : response.Status.Applications[0];
             }
@@ -42,20 +42,20 @@
             return null;
         }
 
-        public void StopApp() {
+        public void StopApp(int? timeout = null) {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
-            _channel.SendRequest(Channel.NS_CAST_RECEIVER, new StopRequest(runningApplication.SessionId), Channel.DEFAULT_RECEIVER_ID);
+            _channel.SendRequest(Channel.NS_CAST_RECEIVER, new StopRequest(runningApplication.SessionId), Channel.DEFAULT_RECEIVER_ID, timeout);
         }
 
-        public Status GetStatus() {
+        public Status GetStatus(int? timeout) {
             EnsureChannelIsConnected();
-            StatusResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new StatusRequest(), Channel.DEFAULT_RECEIVER_ID) as StatusResponse;
+            StatusResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new StatusRequest(), Channel.DEFAULT_RECEIVER_ID, timeout) as StatusResponse;
             return response != null ? response.Status : null;
         }
 
-        public bool GetAppAvailability(string applicationId) {
-            GetAppAvailabilityResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new GetAppAvailabilityRequest(new[] { applicationId }), Channel.DEFAULT_RECEIVER_ID) as GetAppAvailabilityResponse;
+        public bool GetAppAvailability(string applicationId, int? timeout = null) {
+            GetAppAvailabilityResponse response = _channel.SendRequest(Channel.NS_CAST_RECEIVER, new GetAppAvailabilityRequest(new[] { applicationId }), Channel.DEFAULT_RECEIVER_ID, timeout) as GetAppAvailabilityResponse;
             if (response != null && response.Availability != null) {
                 return response.Availability.ContainsKey(applicationId) && response.Availability[applicationId].Equals("APP_AVAILABLE");
             }
@@ -63,29 +63,29 @@
             return false;
         }
 
-        public void SetVolume(double level) {
+        public void SetVolume(double level, int? timeout) {
             EnsureChannelIsConnected();
-            _channel.SendRequest(Channel.NS_CAST_RECEIVER, new SetVolumeRequest(new Volume(level, false)), Channel.DEFAULT_RECEIVER_ID);
+            _channel.SendRequest(Channel.NS_CAST_RECEIVER, new SetVolumeRequest(new Volume(level, false)), Channel.DEFAULT_RECEIVER_ID, timeout);
         }
 
-        public void SetMuted(bool mute) {
+        public void SetMuted(bool mute, int? timeout) {
             EnsureChannelIsConnected();
-            _channel.SendRequest(Channel.NS_CAST_RECEIVER, new SetVolumeRequest(new Volume(null, mute)), Channel.DEFAULT_RECEIVER_ID);
+            _channel.SendRequest(Channel.NS_CAST_RECEIVER, new SetVolumeRequest(new Volume(null, mute)), Channel.DEFAULT_RECEIVER_ID, timeout);
         }
 
-        public void LoadVideo(Uri contentUri, string contentType, MovieMediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED) {
-            Load(contentUri, contentType, metadata);
+        public void LoadVideo(Uri contentUri, string contentType, MovieMediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED, int? timeout = null) {
+            Load(contentUri, contentType, metadata, timeout: timeout);
         }
 
-        public void LoadPhoto(Uri contentUri, string contentType, PhotoMediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED) {
-            Load(contentUri, contentType, metadata);
+        public void LoadPhoto(Uri contentUri, string contentType, PhotoMediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED, int? timeout = null) {
+            Load(contentUri, contentType, metadata, timeout: timeout);
         }
 
-        public void LoadMusic(Uri contentUri, string contentType, MusicTrackMediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED) {
-            Load(contentUri, contentType, metadata);
+        public void LoadMusic(Uri contentUri, string contentType, MusicTrackMediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED, int? timeout = null) {
+            Load(contentUri, contentType, metadata, timeout: timeout);
         }
 
-        public void Load(Uri contentUri, string contentType, MediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED) {
+        public void Load(Uri contentUri, string contentType, MediaMetadata metadata, bool autoPlay = true, StreamType streamType = StreamType.BUFFERED, int? timeout = null) {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
             if (runningApplication.ApplicationId != Channel.DEFAULT_APP_ID) {
@@ -100,12 +100,12 @@
                 ContentType = contentType,
                 Metadata = metadata,
                 StreamType = streamType
-            }, autoPlay), runningApplication.TransportId);
+            }, autoPlay), runningApplication.TransportId, timeout);
 
             HandleResponse(response);
         }
 
-        public void Play() {
+        public void Play(int? timeout = null) {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
             //MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
@@ -114,11 +114,11 @@
             //}
 
             StartSession(runningApplication.TransportId);
-            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PlayRequest(runningApplication.SessionId, 0), runningApplication.TransportId);
+            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PlayRequest(runningApplication.SessionId, 0), runningApplication.TransportId, timeout);
             HandleResponse(response);
         }
 
-        public void Pause() {
+        public void Pause(int? timeout = null) {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
             //MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
@@ -127,11 +127,11 @@
             //}
 
             StartSession(runningApplication.TransportId);
-            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PauseRequest(runningApplication.SessionId, 0), runningApplication.TransportId);
+            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new PauseRequest(runningApplication.SessionId, 0), runningApplication.TransportId, timeout);
             HandleResponse(response);
         }
 
-        public void Seek(double position) {
+        public void Seek(double position, int? timeout = null) {
             EnsureChannelIsConnected();
             Application runningApplication = EnsureApplicationIsRunning();
             MediaStatus mediaStatus = GetMediaStatus(runningApplication.TransportId);
@@ -140,13 +140,13 @@
             }
 
             StartSession(runningApplication.TransportId);
-            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new SeekRequest(runningApplication.SessionId, mediaStatus.MediaSessionId, position), runningApplication.TransportId);
+            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new SeekRequest(runningApplication.SessionId, mediaStatus.MediaSessionId, position), runningApplication.TransportId, timeout);
             HandleResponse(response);
         }
 
-        public Application GetRunningApp() {
+        public Application GetRunningApp(int? timeout = null) {
             EnsureChannelIsConnected();
-            Status status = GetStatus();
+            Status status = GetStatus(timeout);
             return status.Applications != null && status.Applications.Count > 0 ? status.Applications[0] : null;
         }
 
@@ -156,8 +156,8 @@
             }
         }
 
-        private MediaStatus GetMediaStatus(string transportId) {
-            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new StatusRequest(), transportId);
+        private MediaStatus GetMediaStatus(string transportId, int? timeout = null) {
+            Response response = _channel.SendRequest(Channel.NS_CAST_MEDIA, new StatusRequest(), transportId, timeout);
             MediaStatusResponse statusResponse = response as MediaStatusResponse;
             if (statusResponse != null && statusResponse.Statuses != null && statusResponse.Statuses.Count > 0) {
                 return statusResponse.Statuses[0];

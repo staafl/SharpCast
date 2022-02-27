@@ -138,7 +138,8 @@
                         {
                             Title = "screenshot"
                         },
-                        autoPlay: true);
+                        autoPlay: true,
+                        timeout: 30*1000);
 
                     if (!persistent)
                     {
